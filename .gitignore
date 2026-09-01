@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+cookies.txt
+*.part
+*.ytdl
+.download-archive.txt
