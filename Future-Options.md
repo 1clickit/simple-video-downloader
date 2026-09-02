@@ -60,3 +60,46 @@ SSRF defenses should be added only if the service's exposure changes.
 Address the genuine queue, privilege, and storage-failure issues while retaining
 the project's low-tech character. Security improvements should reduce realistic
 risk without turning a small LAN utility into a platform.
+
+## Future UI cleanup: completed jobs
+
+For completed/done jobs, simplify the progress detail line.
+
+Current display:
+
+`100% · Speed: <final speed> · ETA: 00:00`
+
+Future display:
+
+`100%`
+
+Keep the full 100% progress bar, the Completed state, and the privacy-safe
+`Saved to NAS: <final filename>` line. Active downloads should continue to show
+percentage, speed, and ETA. This is cosmetic only and must not alter download,
+progress, security, authentication, scanner, NAS, or network behavior.
+
+## Pre-download duplicate detection
+
+Current behavior can detect a duplicate only during final NAS promotion, after
+the media has already been downloaded, validated, and scanned.
+
+Add a lightweight duplicate preflight before downloading media:
+
+1. Use yt-dlp metadata/simulation mode to obtain the stable source media ID
+   without downloading the media payload.
+2. Do not persist or expose the source URL.
+3. Check `/downloads` for an existing completed media filename containing that
+   stable ID, following the current filename convention such as `[VIDEO_ID]`.
+4. If a match exists, skip the media download immediately and report:
+   - state: `skipped`
+   - reason: `duplicate`
+   - detail: `Skipped — file already exists on NAS`
+5. If no match exists, continue through the normal secure download pipeline.
+6. Retain the existing promotion-time duplicate check as a second safety layer
+   for missed matches or race conditions.
+
+Do not add a database solely for duplicate detection. Avoid an expensive full
+NAS enumeration for every submission when a bounded lookup or lightweight index
+can achieve the same result. Preserve staging, validation, ClamAV fail-closed
+scanning, Caddy authentication, privacy-safe status reporting, and all other
+current security controls.
